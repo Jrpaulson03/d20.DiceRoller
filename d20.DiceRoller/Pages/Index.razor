@@ -1,0 +1,136 @@
+﻿@page "/"
+@inject IJSRuntime JsRuntime
+
+<PageTitle>d20 Roller!</PageTitle>
+
+<link href="css/site.css" rel="stylesheet" />
+
+<div class="container">
+    <div class="row">
+
+        <div class="col-4"></div>
+        <div class="col-4" style="text-align:center">
+            @if (nat20)
+            {
+                <h1>Critical Hit!!!!</h1>
+            }
+        </div>
+
+
+  
+    </div>
+
+
+    <div class="row">
+        <div class="die-content">
+            <div class="die" @onclick="RollTheDice">
+                <figure class="face face-1"></figure>
+                <figure class="face face-2"></figure>
+                <figure class="face face-3"></figure>
+                <figure class="face face-4"></figure>
+                <figure class="face face-5"></figure>
+                <figure class="face face-6"></figure>
+                <figure class="face face-7"></figure>
+                <figure class="face face-8"></figure>
+                <figure class="face face-9"></figure>
+                <figure class="face face-10"></figure>
+                <figure class="face face-11"></figure>
+                <figure class="face face-12"></figure>
+                <figure class="face face-13"></figure>
+                <figure class="face face-14"></figure>
+                <figure class="face face-15"></figure>
+                <figure class="face face-16"></figure>
+                <figure class="face face-17"></figure>
+                <figure class="face face-18"></figure>
+                <figure class="face face-19"></figure>
+                <figure class="face face-20"></figure>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top:20px;">
+        <div class="col-4"></div>
+        <div class="col-4" style="text-align:center">
+            <button @onclick="RollTheDice" class="button btn-success">Roll the die!</button>
+            <h3>You rolled: @d20Dice</h3>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">d20 Animation</h5>
+                    Fun little project, the actual RNG value is generated in the code behind with Blazor, then sent back to the JS for the animation, which is all CSS (SASS actually).
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Credit where credit is due...</h5>
+                    d20 Animation and inspiration found <a href="https://codepen.io/vicentemundim/details/nXNvBw">here.</a>
+                </div>
+            </div>
+        </div>
+
+
+     
+
+
+    </div>
+</div>
+
+<script>
+    var $die = $('.die'),
+        sides = 20,
+        initialSide = 1,
+        lastFace,
+        timeoutId,
+        transitionDuration = 500,
+        animationDuration = 3000
+
+    function randomFace() {
+        var face = Math.floor((Math.random() * sides)) + initialSide
+        lastFace = face == lastFace ? randomFace() : face
+        return face;
+    }
+
+    function rollTo(face) {
+        clearTimeout(timeoutId)
+
+        $('ul > li > a').removeClass('active')
+        $('[href=' + face + ']').addClass('active')
+
+        $die.attr('data-face', face)
+    }
+
+    function reset() {
+        $die.attr('data-face', null).removeClass('rolling')
+    }
+
+</script>
+
+@code {
+    public int d20Dice = 1;
+    public bool nat20 = false;
+
+    //Task to roll the dice.
+    public async Task RollTheDice()
+    {
+        Random rand = new Random();
+        d20Dice = rand.Next(1, 21);
+
+        if (d20Dice == 20)
+        {
+            nat20 = true;
+        }
+        else
+        {
+            nat20 = false;
+        }
+
+        //Call back to the JS to execute the roll animation.
+        await JsRuntime.InvokeVoidAsync("rollTo", d20Dice);
+    }
+}
